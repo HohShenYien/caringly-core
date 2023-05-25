@@ -1,1 +1,13 @@
 Generic single-database configuration.
+
+To create a new migration based on existing models:
+
+```bash
+alembic revision --autogenerate -m "Create monitored_users social_accounts and posts table"
+```
+
+To run the migrations
+
+```bash
+alembic upgrade head
+```
