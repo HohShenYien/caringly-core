@@ -2,25 +2,18 @@ from datetime import datetime, timedelta
 
 import jwt
 
-from classes import User as UserModel
 from server.auth.utils import is_valid_uuid
 from server.extensions import bcrypt, config, db
+from server.users.models import User
 
 
-class AuthUser(UserModel):
+class AuthUser(User):
     def __init__(self, username: str, email: str, password: str):
-        super(UserModel, self).__init__(
+        super(User, self).__init__(
             username=username,
             email=email,
             password=bcrypt.generate_password_hash(password).decode("utf8"),
         )
-
-    def to_dict(self) -> dict:
-        return {
-            "username": self.username,
-            "email": self.email,
-            "receive_email": self.receive_email,
-        }
 
     def match_password(self, password: str) -> bool:
         return bcrypt.check_password_hash(self.password, password)

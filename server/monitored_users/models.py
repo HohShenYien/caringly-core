@@ -1,21 +1,41 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import TYPE_CHECKING, List
 
-import jwt
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import false, func, true
 
-from classes import MonitoredUser as MonitoredUserModel
+from server.database import Base
 from server.extensions import db
-from server.social_accounts.models import SocialAccountImpl
+from server.users.models import User
+
+if TYPE_CHECKING:
+    from server.social_accounts.models import SocialAccount
 
 
-class MonitoredUserImpl(MonitoredUserModel):
-    def __init__(self, *args, **kwargs):
-        super(MonitoredUserImpl, self).__init__(*args, **kwargs)
+class MonitoredUser(Base):
+    __tablename__ = "monitored_users"
+
+    name: Mapped[str]
+    email: Mapped[str]
+    is_approved: Mapped[bool] = mapped_column(server_default=false())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship("User", back_populates="monitored_users")
+
+    social_accounts: Mapped[List["SocialAccount"]] = relationship(
+        "SocialAccount", back_populates="monitored_user", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"MonitoredUser(id={self.id!r}, name={self.name!r}, email={self.email})"
 
     def to_dict(self):
         return {
+            "id": self.id,
             "name": self.name,
             "email": self.email,
-            "accounts": list(
-                map(lambda acc: SocialAccountImpl.to_dict(acc), self.social_accounts)
-            ),
+            "accounts": list(map(lambda acc: acc.to_dict(), self.social_accounts)),
         }

@@ -1,7 +1,6 @@
 from flask import Blueprint, g, jsonify
 from marshmallow import Schema, fields
 
-from classes import User as UserModel
 from server.auth.extensions import login_required
 from server.auth.models import AuthUser
 from server.extensions import db
@@ -94,7 +93,7 @@ class RegisterSchema(Schema):
 @validate_with_schema(RegisterSchema)
 def register(data):
     post_data = data
-    user = db.session.query(UserModel).filter_by(email=post_data.get("email")).first()
+    user = db.session.query(AuthUser).filter_by(email=post_data.get("email")).first()
     if not user:
         try:
             user = AuthUser(

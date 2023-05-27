@@ -2,12 +2,11 @@ from flask import Blueprint, g, jsonify
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
 
-from classes import MonitoredUser, SocialAccount
 from server.auth.extensions import login_required
 from server.extensions import db
 from server.monitored_users.extensions import access_monitored_user
-from server.monitored_users.models import MonitoredUserImpl
-from server.social_accounts.models import SocialAccountImpl
+from server.monitored_users.models import MonitoredUser
+from server.social_accounts.models import SocialAccount
 from server.utils import validate_with_schema
 
 monitored_user_blueprint = Blueprint(
@@ -73,7 +72,7 @@ def create_monitored_user(data):
         jsonify(
             {
                 "status": "success",
-                "data": MonitoredUserImpl.to_dict(monitored_user),
+                "data": monitored_user.to_dict(),
             }
         ),
         200,

@@ -1,8 +1,16 @@
 from flask import Flask
 
 from server.auth.views import auth_blueprint
+from server.database import Base
 from server.extensions import bcrypt, config, db
+
+# These are required for scanning
+from server.monitored_users.models import MonitoredUser
 from server.monitored_users.views import monitored_user_blueprint
+from server.posts.models import Post
+from server.social_accounts.models import SocialAccount
+from server.social_auths.models import SocialAuth
+from server.users.models import User
 
 
 def create_app():
