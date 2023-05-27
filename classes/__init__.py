@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import ForeignKey, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.sql import func, true
+from sqlalchemy.sql import false, func, true
 
 
 class Base(DeclarativeBase):
@@ -33,7 +33,7 @@ class User(Base):
     )
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r})"
+        return f"User(id={self.id!r}, username={self.username!r}, email={self.email!r})"
 
 
 class SocialAuth(Base):
@@ -57,7 +57,7 @@ class MonitoredUser(Base):
 
     name: Mapped[str]
     email: Mapped[str]
-    is_approved: Mapped[bool]
+    is_approved: Mapped[bool] = mapped_column(server_default=false())
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
@@ -78,7 +78,7 @@ class SocialAccount(Base):
     url: Mapped[str]
     social_account_id: Mapped[str]
     profile_pic_url: Mapped[str] = mapped_column(nullable=True)
-    type: Mapped[bool]
+    type: Mapped[str]
     last_scanned: Mapped[datetime] = mapped_column(server_default=func.now())
 
     monitored_user_id: Mapped[UUID] = mapped_column(ForeignKey("monitored_users.id"))

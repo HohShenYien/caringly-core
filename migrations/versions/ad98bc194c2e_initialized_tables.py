@@ -46,7 +46,9 @@ def upgrade() -> None:
         "monitored_users",
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("email", sa.String(), nullable=False),
-        sa.Column("is_approved", sa.Boolean(), nullable=False),
+        sa.Column(
+            "is_approved", sa.Boolean(), nullable=False, server_default=sa.text("false")
+        ),
         sa.Column(
             "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
         ),
@@ -91,7 +93,7 @@ def upgrade() -> None:
         sa.Column("url", sa.String(), nullable=False),
         sa.Column("social_account_id", sa.String(), nullable=False),
         sa.Column("profile_pic_url", sa.String(), nullable=True),
-        sa.Column("type", sa.Boolean(), nullable=False),
+        sa.Column("type", sa.String(), nullable=False),
         sa.Column(
             "last_scanned",
             sa.DateTime(),
