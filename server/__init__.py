@@ -9,7 +9,9 @@ from server.monitored_users.models import MonitoredUser
 from server.monitored_users.views import monitored_user_blueprint
 from server.posts.models import Post
 from server.social_accounts.models import SocialAccount
+from server.social_accounts.views import social_accounts_blueprint
 from server.social_auths.models import SocialAuth
+from server.stats.views import stats_blueprint
 from server.users.models import User
 
 
@@ -32,6 +34,11 @@ def register_secrets(app: "Flask"):
 def register_blueprints(app: "Flask"):
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
     app.register_blueprint(monitored_user_blueprint, url_prefix="/monitored-users")
+    app.register_blueprint(
+        social_accounts_blueprint,
+        url_prefix="/monitored-users/<monitored_user_id>/social-accounts",
+    )
+    app.register_blueprint(stats_blueprint, url_prefix="/stats")
 
 
 def register_extensions(app: "Flask"):

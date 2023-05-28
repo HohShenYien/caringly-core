@@ -1,13 +1,16 @@
 from flask import Blueprint, g, jsonify
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
+from sqlalchemy.sql import func
 
 from server.auth.extensions import login_required
 from server.extensions import db
 from server.monitored_users.extensions import access_monitored_user
 from server.monitored_users.models import MonitoredUser
+from server.posts.models import Post
 from server.social_accounts.models import SocialAccount
-from server.utils import validate_with_schema
+from server.social_accounts.views import AccountSchema
+from server.utils import extract_date, validate_with_schema
 
 monitored_user_blueprint = Blueprint(
     "monitored-users",
@@ -30,17 +33,10 @@ def all_users():
     )
 
 
-class Account(Schema):
-    type = fields.String(
-        required=True, validate=OneOf(["facebook", "instagram", "twitter"])
-    )
-    url = fields.URL()
-
-
 class CreateMonitoredUserSchema(Schema):
     name = fields.String(required=True)
     email = fields.Email(required=True)
-    accounts = fields.Nested(Account(many=True), required=True)
+    accounts = fields.Nested(AccountSchema(many=True), required=True)
 
 
 # TODO: Validate the social media URL
@@ -79,11 +75,25 @@ def create_monitored_user(data):
     )
 
 
+@monitored_user_blueprint.route("/<monitored_user_id>", methods=["GET"])
+@login_required
+@access_monitored_user
+def monitored_user_details(monitored_user_id, monitored_user):
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "data": monitored_user.to_dict(),
+            }
+        ),
+        200,
+    )
+
+
 class UpdateMonitoredUserSchema(Schema):
     name = fields.String(required=True)
 
 
-# TODO: Update User
 @monitored_user_blueprint.route("/<monitored_user_id>", methods=["PUT"])
 @login_required
 @access_monitored_user
@@ -112,3 +122,44 @@ def delete_monitored_user(monitored_user_id, monitored_user):
         jsonify({"status": "success", "message": "Deleted successfully"}),
         200,
     )
+
+
+@monitored_user_blueprint.route("/<monitored_user_id>/metrics", methods=["GET"])
+@login_required
+@extract_date
+def metrics(monitored_user_id, date):
+    filters = [SocialAccount.monitored_user_id == monitored_user_id]
+    if date is not None:
+        filters.append(Post.date >= date)
+    query = (
+        db.session.query(Post.category, func.count().label("c"))
+        .join(Post.social_account)
+        .filter(*filters)
+        .group_by(Post.category)
+    )
+
+    print(query)
+
+    res = {"neutral": 0, "suicide": 0, "depression": 0, "total": 0}
+
+    for cat, n in query.all():
+        res[cat] = n
+        res["total"] += n
+
+    return jsonify({"status": "success", "data": res}), 200
+
+
+@monitored_user_blueprint.route("/<monitored_user_id>/posts/<cat>", methods=["GET"])
+@login_required
+@extract_date
+def posts(monitored_user_id, date, cat):
+    filters = [SocialAccount.monitored_user_id == monitored_user_id]
+    if date is not None:
+        filters.append(Post.date >= date)
+    if cat != "all":
+        filters.append(Post.category == cat)
+    query = db.session.query(Post).join(Post.social_account).filter(*filters)
+
+    res = [sa.to_dict() for sa in query.all()]
+
+    return jsonify({"status": "success", "data": res}), 200

@@ -39,3 +39,10 @@ class MonitoredUser(Base):
             "email": self.email,
             "accounts": list(map(lambda acc: acc.to_dict(), self.social_accounts)),
         }
+
+    def to_dict_simple(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+        }
