@@ -81,6 +81,9 @@ def metrics(date):
         "posts": posts,
         "depression": [u.to_dict_simple() for u in users_with_depression_posts],
         "suicide": [u.to_dict_simple() for u in users_with_suicide_posts],
+        "total": db.session.query(MonitoredUser)
+        .filter(MonitoredUser.user_id == user.id)
+        .count(),
     }
 
     return jsonify({"status": "success", "data": res}), 200

@@ -37,7 +37,15 @@ class MonitoredUser(Base):
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "accounts": list(map(lambda acc: acc.to_dict(), self.social_accounts)),
+            "accounts": sorted(
+                list(
+                    map(
+                        lambda acc: acc.to_dict(),
+                        self.social_accounts,
+                    ),
+                ),
+                key=lambda x: (x.get("type"), x.get("username")),
+            ),
         }
 
     def to_dict_simple(self):

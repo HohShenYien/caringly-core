@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, Response, request
+from flask_cors import CORS
 
 from server.auth.views import auth_blueprint
 from server.database import Base
@@ -23,6 +24,14 @@ def create_app():
     register_extensions(app)
     register_blueprints(app)
     print(app.url_map)
+    CORS(app)
+
+    @app.before_request
+    def before_request():
+        response = Response().headers["Access-Control-Allow-Origin"] = "*"
+        if request.method.lower() == "options":
+            return response
+
     return app
 
 

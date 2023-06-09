@@ -10,6 +10,11 @@ from server.monitored_users.models import MonitoredUser
 from server.posts.models import Post
 from server.social_accounts.models import SocialAccount
 from server.social_accounts.views import AccountSchema
+from server.social_media import to_social_media_account
+from server.social_media.instagram import (
+    get_instagram_posts,
+    get_instagram_user_details,
+)
 from server.utils import extract_date, validate_with_schema
 
 monitored_user_blueprint = Blueprint(
@@ -21,7 +26,11 @@ monitored_user_blueprint = Blueprint(
 @monitored_user_blueprint.route("/", methods=["GET"])
 @login_required
 def all_users():
-    users = g.user.monitored_users
+    users = (
+        MonitoredUser.query()
+        .filter(MonitoredUser.user_id == g.user.id)
+        .order_by(MonitoredUser.created_at.desc())
+    )
     return (
         jsonify(
             {
@@ -47,10 +56,7 @@ def create_monitored_user(data):
     accounts = list(
         map(
             lambda acc: SocialAccount(
-                type=acc.get("type"),
-                url=acc.get("url"),
-                username=data.get("name"),
-                social_account_id="asdf",
+                **to_social_media_account(type=acc.get("type"), url=acc.get("url")),
             ),
             data.get("accounts"),
         )
@@ -163,3 +169,12 @@ def posts(monitored_user_id, date, cat):
     res = [sa.to_dict() for sa in query.all()]
 
     return jsonify({"status": "success", "data": res}), 200
+
+
+@monitored_user_blueprint.route("/test/<username>", methods=["GET"])
+def test(username):
+    user = get_instagram_user_details(f"https://instagram.com/{username}")
+    print(user)
+    # tweets = get_instagram_posts(user["id"])
+    # print(tweets)
+    return "HI"

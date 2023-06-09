@@ -45,5 +45,6 @@ class AuthUser(User):
         except jwt.ExpiredSignatureError:
             return "Signature expired. Please log in again."
         except jwt.InvalidTokenError as e:
-            print(e)
             return "Invalid token. Please log in again."
+        except Exception:
+            return "Something went wrong, please try to login again"

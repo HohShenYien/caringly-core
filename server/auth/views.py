@@ -1,9 +1,9 @@
 from flask import Blueprint, g, jsonify
-from marshmallow import Schema, fields
+from marshmallow import Schema, ValidationError, fields, validates_schema
 
 from server.auth.extensions import login_required
 from server.auth.models import AuthUser
-from server.extensions import db
+from server.extensions import bcrypt, db
 from server.utils import validate_with_schema
 
 auth_blueprint = Blueprint(
@@ -36,7 +36,9 @@ def update_me(data: dict):
     g.user.username = data.get("username")
     g.user.receive_email = data.get("receive_email")
     if "new_password" in data:
-        g.user.password = data.get("new_password")
+        g.user.password = bcrypt.generate_password_hash(
+            data.get("new_password")
+        ).decode("utf8")
     db.session.commit()
     return (
         jsonify(
@@ -65,7 +67,10 @@ def login(data):
             db.session.query(AuthUser).filter_by(email=post_data.get("email")).first()
         )
         if user is None or not user.match_password(data.get("password")):
-            return jsonify({"status": "fail", "message": "Incorrect email or password"})
+            return (
+                jsonify({"status": "fail", "message": "Incorrect email or password"}),
+                400,
+            )
         auth_token = user.encode_auth_token()
         if auth_token:
             responseObject = {
@@ -87,6 +92,12 @@ class RegisterSchema(Schema):
     email = fields.Email(required=True)
     password = fields.String(required=True)
     username = fields.String(required=True)
+    confirmPassword = fields.String(required=True)
+
+    @validates_schema
+    def validate_numbers(self, data, **kwargs):
+        if data["password"] != data["confirmPassword"]:
+            raise ValidationError("The passwords don't match")
 
 
 @auth_blueprint.route("/register", methods=["POST"])
@@ -122,9 +133,6 @@ def register(data):
     else:
         responseObject = {
             "status": "fail",
-            "message": "User already exists. Please Log in.",
+            "message": "Email already exists. Please Log in.",
         }
-        return jsonify(responseObject), 202
-
-
-# TODO: Update User
+        return jsonify(responseObject), 400
