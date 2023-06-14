@@ -16,6 +16,7 @@ class Post(Base):
     date: Mapped[datetime]
     category: Mapped[str]
     probability: Mapped[float]
+    url: Mapped[str]
 
     social_account_id: Mapped[UUID] = mapped_column(ForeignKey("social_accounts.id"))
     social_account: Mapped["SocialAccount"] = relationship(
@@ -31,4 +32,5 @@ class Post(Base):
             "text": self.text,
             "category": self.category,
             "type": self.social_account.type,
+            "url": self.url,
         }

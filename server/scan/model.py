@@ -6,7 +6,7 @@ from tensorflow.keras.models import load_model
 
 from server.scan.utils import preprocess_text
 
-# Enable this later
+# TODO: Enable this later
 # model_layer_1 = load_model("./server/scan/models/lstm-layer-1.mod")
 # model_layer_2 = load_model("./server/scan/models/best-layer-2-bilstm.mod")
 

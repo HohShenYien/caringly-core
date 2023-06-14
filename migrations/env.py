@@ -10,6 +10,11 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from server.database import Base
+from server.monitored_users.models import MonitoredUser
+from server.posts.models import Post
+from server.social_accounts.models import SocialAccount
+from server.social_auths.models import SocialAuth
+from server.users.models import User
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

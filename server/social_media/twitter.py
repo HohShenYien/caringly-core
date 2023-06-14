@@ -35,7 +35,11 @@ def get_tweets(id: str, last_scanned: "datetime"):
 
     return list(
         map(
-            lambda x: {"text": x.get("fullText"), "date": x.get("createdAt")},
+            lambda x: {
+                "text": x.get("fullText"),
+                "date": x.get("createdAt"),
+                "url": f"https://twitter.com/user/status/{x.get('id')}",
+            },
             response.json().get("tweets"),
         )
     )

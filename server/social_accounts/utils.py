@@ -8,6 +8,7 @@ from server.social_media.instagram import get_instagram_posts
 from server.social_media.twitter import get_tweets
 
 
+# TODO: Add Predict function here
 def scan_account_posts(social_account: "SocialAccount") -> "List[SocialAccount]":
     posts = []
     match social_account.type:
@@ -21,10 +22,19 @@ def scan_account_posts(social_account: "SocialAccount") -> "List[SocialAccount]"
             )
 
     mapped_posts = list(
-        map(lambda x: Post(category="neutral", probability=0.99, **x), posts)
+        map(
+            lambda x: Post(
+                category="depression",
+                probability=0.99,
+                url=x.get("url"),
+                date=x.get("date"),
+                text=x.get("text"),
+            ),
+            posts,
+        )
     )
     social_account.posts.extend(mapped_posts)
-    social_account.last_scanned = datetime.now()
+    # social_account.last_scanned = datetime.now()
     db.session.commit()
 
     return mapped_posts
