@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from os import path
 
 from instagrapi import Client
@@ -17,13 +18,16 @@ if not path.exists(session_path):
         f.write("{}")
 else:
     cl.load_settings(session_path)
-cl.login(config["INSTA_USERNAME"], config["INSTA_PASSWORD"])
-cl.delay_range = [3, 5]
+# TODO: uncomment
+# cl.login(config["INSTA_USERNAME"], config["INSTA_PASSWORD"])
+# cl.delay_range = [3, 5]
 # cl.dump_settings(session_path)
 
 
 def get_instagram_user_details(url: str) -> User:
-    username = re.match(r"https://instagram.com/([a-zA-Z0-9_]+)", url).group(1)
+    username = re.match(
+        r"https:\/\/(www\.)?instagram\.com\/([a-zA-Z0-9_]+)", url
+    ).group(2)
     try:
         user_id = cl.user_id_from_username(username)
         info = cl.user_info(user_id)
@@ -31,15 +35,14 @@ def get_instagram_user_details(url: str) -> User:
 
     except Exception as e:
         print(e)
-        raise Exception("Invalid user")
+        raise Exception("The Instagram user does not exist")
 
     return info
 
 
-def get_instagram_posts(id):
+def get_instagram_posts(id: str, date_after: "datetime"):
     try:
         response = cl.user_medias_paginated(id, 10)
-        print(response)
     except:
         raise Exception("Try again")
 

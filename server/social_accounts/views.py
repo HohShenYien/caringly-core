@@ -10,6 +10,7 @@ from server.monitored_users.extensions import access_monitored_user
 from server.monitored_users.models import MonitoredUser
 from server.social_accounts.extensions import access_social_account
 from server.social_accounts.models import SocialAccount
+from server.social_media import to_social_media_account
 from server.utils import validate_with_schema
 
 social_accounts_blueprint = Blueprint(
@@ -25,19 +26,29 @@ class AccountSchema(Schema):
     url = fields.URL(required=True)
 
 
-# TODO: Validate the social media URL
+# TODO: Change URL to email for facebook
 @social_accounts_blueprint.route("/", methods=["POST"])
 @login_required
 @validate_with_schema(AccountSchema)
 @access_monitored_user
 def create_social_account(data, monitored_user_id, monitored_user: "MonitoredUser"):
-    account = SocialAccount(
-        type=data.get("type"),
-        url=data.get("url"),
-        username="ASDF",
-        social_account_id="asdf",
-    )
-    monitored_user.social_accounts.append(account)
+    try:
+        account = SocialAccount(
+            **to_social_media_account(
+                type=data.get("type"),
+                url=data.get("url"),
+            )
+        )
+        for acc in monitored_user.social_accounts:
+            if acc.url == account.url:
+                raise Exception("The account has already existed")
+        monitored_user.social_accounts.append(account)
+
+    except Exception as e:
+        return (
+            jsonify({"status": "fail", "message": str(e)}),
+            400,
+        )
     db.session.commit()
 
     return (

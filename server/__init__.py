@@ -9,6 +9,7 @@ from server.extensions import bcrypt, config, db
 from server.monitored_users.models import MonitoredUser
 from server.monitored_users.views import monitored_user_blueprint
 from server.posts.models import Post
+from server.scan.views import scan_blueprint
 from server.social_accounts.models import SocialAccount
 from server.social_accounts.views import social_accounts_blueprint
 from server.social_auths.models import SocialAuth
@@ -48,6 +49,7 @@ def register_blueprints(app: "Flask"):
         url_prefix="/monitored-users/<monitored_user_id>/social-accounts",
     )
     app.register_blueprint(stats_blueprint, url_prefix="/stats")
+    app.register_blueprint(scan_blueprint, url_prefix="/scan")
 
 
 def register_extensions(app: "Flask"):

@@ -7,6 +7,7 @@ from server.auth.extensions import login_required
 from server.extensions import db
 from server.monitored_users.extensions import access_monitored_user
 from server.monitored_users.models import MonitoredUser
+from server.monitored_users.utils import scan_user_posts
 from server.posts.models import Post
 from server.social_accounts.models import SocialAccount
 from server.social_accounts.views import AccountSchema
@@ -48,19 +49,26 @@ class CreateMonitoredUserSchema(Schema):
     accounts = fields.Nested(AccountSchema(many=True), required=True)
 
 
-# TODO: Validate the social media URL
 @monitored_user_blueprint.route("/", methods=["POST"])
 @login_required
 @validate_with_schema(CreateMonitoredUserSchema)
 def create_monitored_user(data):
-    accounts = list(
-        map(
-            lambda acc: SocialAccount(
-                **to_social_media_account(type=acc.get("type"), url=acc.get("url")),
-            ),
-            data.get("accounts"),
+    try:
+        accounts = list(
+            map(
+                lambda acc: SocialAccount(
+                    **to_social_media_account(type=acc.get("type"), url=acc.get("url")),
+                ),
+                data.get("accounts"),
+            )
         )
-    )
+
+    except Exception as e:
+        return (
+            jsonify({"status": "fail", "message": str(e)}),
+            400,
+        )
+
     monitored_user = MonitoredUser(
         name=data.get("name"),
         email=data.get("email"),
@@ -144,8 +152,6 @@ def metrics(monitored_user_id, date):
         .group_by(Post.category)
     )
 
-    print(query)
-
     res = {"neutral": 0, "suicide": 0, "depression": 0, "total": 0}
 
     for cat, n in query.all():
@@ -171,10 +177,15 @@ def posts(monitored_user_id, date, cat):
     return jsonify({"status": "success", "data": res}), 200
 
 
-@monitored_user_blueprint.route("/test/<username>", methods=["GET"])
-def test(username):
-    user = get_instagram_user_details(f"https://instagram.com/{username}")
-    print(user)
-    # tweets = get_instagram_posts(user["id"])
-    # print(tweets)
-    return "HI"
+@monitored_user_blueprint.route("/<monitored_user_id>/scan", methods=["GET"])
+@login_required
+@access_monitored_user
+def scan_now(monitored_user_id, monitored_user):
+    posts = scan_user_posts(monitored_user)
+    print(posts)
+    return (
+        jsonify(
+            {"status": "success", "message": "Deleted successfully", "data": posts}
+        ),
+        200,
+    )

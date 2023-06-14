@@ -41,4 +41,5 @@ class SocialAccount(Base):
             "username": self.username,
             "url": self.url,
             "id": self.id,
+            "profile_pic_url": self.profile_pic_url,
         }

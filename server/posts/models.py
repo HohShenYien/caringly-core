@@ -26,4 +26,9 @@ class Post(Base):
         return f"MonitoredUser(id={self.id!r}, text={self.text!r}, category={self.category})"
 
     def to_dict(self) -> dict:
-        return {"id": self.id, "text": self.text}
+        return {
+            "id": self.id,
+            "text": self.text,
+            "category": self.category,
+            "type": self.social_account.type,
+        }

@@ -1,4 +1,3 @@
-# TODO: Homepage dashboard stats, wekk, month, year, all
 from flask import Blueprint, g, jsonify
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
