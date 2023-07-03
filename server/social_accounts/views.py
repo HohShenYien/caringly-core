@@ -69,8 +69,15 @@ def create_social_account(data, monitored_user_id, monitored_user: "MonitoredUse
 def update_social_account(
     data, monitored_user_id, social_account_id, social_account: "SocialAccount"
 ):
-    social_account.url = data.get("url")
-    social_account.type = data.get("type")
+    account = to_social_media_account(
+                type=data.get("type"),
+                url=data.get("url"),
+            )
+    social_account.url = account.get("url")
+    social_account.type = account.get("type")
+    social_account.username = account.get("username")
+    social_account.profile_pic_url = account.get("profile_pic_url")
+    social_account.social_account_id = account.get("social_account_id")
     db.session.commit()
 
     return (

@@ -19,9 +19,9 @@ if not path.exists(session_path):
 else:
     cl.load_settings(session_path)
 # TODO: uncomment
-# cl.login(config["INSTA_USERNAME"], config["INSTA_PASSWORD"])
-# cl.delay_range = [3, 5]
-# cl.dump_settings(session_path)
+cl.login(config["INSTA_USERNAME"], config["INSTA_PASSWORD"])
+cl.delay_range = [3, 5]
+cl.dump_settings(session_path)
 
 
 def get_instagram_user_details(url: str) -> User:
@@ -41,9 +41,24 @@ def get_instagram_user_details(url: str) -> User:
 
 
 def get_instagram_posts(id: str, date_after: "datetime"):
+    res = []
     try:
-        response = cl.user_medias_paginated(id, 10)
-    except:
+        response, cursor = cl.user_medias_paginated(id, 10)
+        flag = True
+
+        while flag:
+            if (len(res) > 0):
+                response, cursor = cl.user_medias_paginated(id, 10, cursor)
+            for media in response:
+                if media.taken_at.replace(tzinfo=None) < date_after:
+                    flag = False
+                    break
+                res.append({"id": media.id, "url": f"https://instagram.com/p/{media.code}/", "text": media.caption_text, "date": media.taken_at.replace(tzinfo=None)})
+
+            if len(response) < 10:
+                flag = False
+    except Exception as e:
+        print(e)
         raise Exception("Try again")
 
-    return response
+    return res

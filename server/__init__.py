@@ -1,3 +1,5 @@
+import atexit
+
 from flask import Flask, Response, request
 from flask_cors import CORS
 
@@ -10,6 +12,7 @@ from server.monitored_users.models import MonitoredUser
 from server.monitored_users.views import monitored_user_blueprint
 from server.posts.models import Post
 from server.scan.views import scan_blueprint
+from server.schedulers import scan_account, scheduler
 from server.social_accounts.models import SocialAccount
 from server.social_accounts.views import social_accounts_blueprint
 from server.social_auths.models import SocialAuth
@@ -24,6 +27,8 @@ def create_app():
     register_secrets(app)
     register_extensions(app)
     register_blueprints(app)
+    # TODO: Uncomment
+    # register_background()
     print(app.url_map)
     CORS(app)
 
@@ -55,3 +60,11 @@ def register_blueprints(app: "Flask"):
 def register_extensions(app: "Flask"):
     bcrypt.init_app(app)
     db.init_app(app)
+
+def register_background():
+    # hour
+    scheduler.add_job(func=scan_account, trigger="interval", seconds=60 * 60)
+    scheduler.start()
+
+    # Shut down the scheduler when exiting the app
+    atexit.register(lambda: scheduler.shutdown())

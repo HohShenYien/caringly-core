@@ -182,10 +182,9 @@ def posts(monitored_user_id, date, cat):
 @access_monitored_user
 def scan_now(monitored_user_id, monitored_user):
     posts = scan_user_posts(monitored_user)
-    print(posts)
     return (
         jsonify(
-            {"status": "success", "message": "Deleted successfully", "data": posts}
+            {"status": "success", "message": "Scanned successfully", "data": posts}
         ),
         200,
     )

@@ -33,4 +33,5 @@ class Post(Base):
             "category": self.category,
             "type": self.social_account.type,
             "url": self.url,
+            "date": self.date,
         }

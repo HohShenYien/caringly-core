@@ -22,10 +22,10 @@ def get_twitter_user_details(url: str):
     return response.json()["user"]
 
 
-def get_tweets(id: str, last_scanned: "datetime"):
+def get_tweets(username: str, last_scanned: "datetime"):
     try:
         response = requests.get(
-            f"{config['FRONTEND_URL']}/api/twitter/tweets/{id}?last_scanned={last_scanned.isoformat()}"
+            f"{config['FRONTEND_URL']}/api/twitter/tweets/{username}?last_scanned={last_scanned.isoformat()}"
         )
         if response.status_code != 200:
             raise Exception("")
