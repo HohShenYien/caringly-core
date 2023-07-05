@@ -1,5 +1,3 @@
-# TODO: Validate Social Media URL
-
 from flask import Blueprint, g, jsonify
 from marshmallow import Schema, fields
 from marshmallow.validate import OneOf
@@ -70,9 +68,9 @@ def update_social_account(
     data, monitored_user_id, social_account_id, social_account: "SocialAccount"
 ):
     account = to_social_media_account(
-                type=data.get("type"),
-                url=data.get("url"),
-            )
+        type=data.get("type"),
+        url=data.get("url"),
+    )
     social_account.url = account.get("url")
     social_account.type = account.get("type")
     social_account.username = account.get("username")

@@ -2,6 +2,7 @@ import re
 
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
+from nltk.tokenize import word_tokenize
 
 
 def clean_text(text):
@@ -317,7 +318,7 @@ def word_abbrev(word):
 # Replace all abbreviations
 def replace_abbrev(text):
     string = ""
-    for word in text.split():
+    for word in word_tokenize(text):
         string += word_abbrev(word) + " "
     return string
 
@@ -326,21 +327,24 @@ stemmer = SnowballStemmer("english")
 
 
 def stem(text):
-    return " ".join([stemmer.stem(word) for word in text.split()])
+    return " ".join([stemmer.stem(word) for word in word_tokenize(text)])
 
 
-def remove_stop_word(text):
+def remove_stop_word(text: str):
     stop_words = stopwords.words("english")
-    return " ".join([word for word in text.split() if word not in (stop_words)])
+    return " ".join(
+        [word for word in word_tokenize(text) if word.lower() not in (stop_words)]
+    )
 
 
 def preprocess_text(input_data):
-    r = remove_stop_word(input_data)
-    r = clean_text(r)
+    r = clean_text(input_data)
     r = remove_URL(r)
     r = remove_html(r)
     r = remove_emoji(r)
     r = to_lower(r)
     r = replace_abbrev(r)
+    r = remove_punc(r)
+    r = remove_stop_word(r)
     r = stem(r)
     return r

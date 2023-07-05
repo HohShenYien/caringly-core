@@ -11,7 +11,7 @@ def get_twitter_user_details(url: str):
     username = re.match(r"https://(www\.)?twitter\.com/([a-zA-Z0-9_]+)/?", url).group(2)
     try:
         response = requests.get(
-            quote(f"{config['FRONTEND_URL']}/api/twitter/users/{username}")
+            f"{config['FRONTEND_URL']}/api/twitter/users/{username}"
         )
         if response.status_code != 200:
             raise Exception("")
