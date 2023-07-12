@@ -6,7 +6,6 @@ from tensorflow.keras.models import load_model
 
 from server.scan.utils import preprocess_text
 
-# TODO: Enable this later
 model_layer_1 = load_model("./server/scan/models/lstm-layer-1.mod")
 model_layer_2 = load_model("./server/scan/models/best-layer-2-bilstm.mod")
 
@@ -20,6 +19,8 @@ def classify(row):
 
 
 def predict(texts: "List[str]"):
+    if len(texts) == 0:
+        return []
     clean_texts = [preprocess_text(text) for text in texts]
     pred1 = model_layer_1.predict(clean_texts)
     pred2 = model_layer_2.predict(clean_texts)

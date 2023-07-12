@@ -31,7 +31,6 @@ def get_instagram_user_details(url: str) -> User:
     try:
         user_id = cl.user_id_from_username(username)
         info = cl.user_info(user_id)
-        print(info)
 
     except Exception as e:
         print(e)

@@ -12,12 +12,13 @@ from server.users.models import User
 TEMPLATE_PATH = "./server/email/templates"
 
 mailer = smtplib.SMTP(config.get("MAIL_SERVER"), int(config.get("MAIL_PORT")))
-mailer.login(config.get("MAIL_USERNAME"), config.get("MAIL_PASSWORD"))
 atexit.register(lambda: mailer.quit())
 sender = config.get("MAIL_SENDER")
 
 
 def send_email(subject, html, recipient):
+    mailer = smtplib.SMTP(config.get("MAIL_SERVER"), int(config.get("MAIL_PORT")))
+    mailer.login(config.get("MAIL_USERNAME"), config.get("MAIL_PASSWORD"))
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = sender
@@ -42,7 +43,6 @@ def read_template(name: str, variables: dict = {}):
 
 def send_alert(user: User, monitored_user: MonitoredUser, posts: "List[dict]"):
     url = f"{config.get('FRONTEND_URL')}/app/users/{monitored_user.id}"
-    print(posts)
     content = map(
         lambda post: f"""\
                   <tr>
@@ -55,13 +55,12 @@ def send_alert(user: User, monitored_user: MonitoredUser, posts: "List[dict]"):
                     >
                         <div style="font-family: sans-serif">
                             <div
-                                class="{"red" if post.get(" category") == "suicide" else "orange"} post"
+                                class="{"red" if post.get("category") == "suicide" else "orange"} post"
                                 style="
                                 font-size: 14px;
                                 font-family: Tahoma, Verdana,
                                     Segoe, sans-serif;
                                 mso-line-height-alt: 14.399999999999999px;
-                                color: #8d94a3;
                                 line-height: 1.2;
                                 "
                             >
@@ -69,7 +68,7 @@ def send_alert(user: User, monitored_user: MonitoredUser, posts: "List[dict]"):
                                     <img src="{"https://i.imgur.com/nFHPZ84.png" if post.get("type") == "instagram" else "https://i.imgur.com/AphCJD1.png"}" alt="Social media logo" style="height: 36px;width: 36px;object-fit: contain;">
                                     <div style="padding-left: 10px;padding-right: 10px;">
                                         <p style="color: black;text-transform: capitalize;font-weight: 600;margin: 0;">{post.get("type")}</p>
-                                        <p style="margin: 0; margin-top: 3px;">{post.get("date").strftime("%m/%d/%Y")}</p>
+                                        <p style="margin: 0; margin-top: 3px; color: #717171">{post.get("date").strftime("%d/%m/%Y")}</p>
                                     </div>
                                     <div style="flex: 1;display: flex;">
                                         <div style="font-size: 10px;font-weight: 600;padding: 2px 4px;border-radius: 50px;text-transform: capitalize;" class="{"red-pill" if post.get("category") == "suicide" else "orange-pill"}">{post.get("category")}</div>

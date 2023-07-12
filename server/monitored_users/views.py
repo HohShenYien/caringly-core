@@ -170,7 +170,12 @@ def posts(monitored_user_id, date, cat):
         filters.append(Post.date >= date)
     if cat != "all":
         filters.append(Post.category == cat)
-    query = db.session.query(Post).join(Post.social_account).filter(*filters)
+    query = (
+        db.session.query(Post)
+        .join(Post.social_account)
+        .filter(*filters)
+        .order_by(Post.date.desc())
+    )
 
     res = [sa.to_dict() for sa in query.all()]
 

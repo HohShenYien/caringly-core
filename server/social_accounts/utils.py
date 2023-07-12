@@ -31,7 +31,7 @@ def scan_account_posts(social_account: "SocialAccount") -> "List[SocialAccount]"
             mapped_posts.append(
                 Post(
                     category=prediction,
-                    probability=probability,
+                    probability=float(probability),
                     url=posts[i].get("url"),
                     date=posts[i].get("date"),
                     text=posts[i].get("text"),

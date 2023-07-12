@@ -76,6 +76,7 @@ def update_social_account(
     social_account.username = account.get("username")
     social_account.profile_pic_url = account.get("profile_pic_url")
     social_account.social_account_id = account.get("social_account_id")
+    social_account.last_scanned = account.get("last_scanned")
     db.session.commit()
 
     return (

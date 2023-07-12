@@ -5,14 +5,13 @@ from flask_cors import CORS
 
 from server.auth.views import auth_blueprint
 from server.database import Base
-from server.extensions import bcrypt, config, db
+from server.extensions import bcrypt, config, db, scheduler
 
 # These are required for scanning
 from server.monitored_users.models import MonitoredUser
 from server.monitored_users.views import monitored_user_blueprint
 from server.posts.models import Post
 from server.scan.views import scan_blueprint
-from server.schedulers import scan_account, scheduler
 from server.social_accounts.models import SocialAccount
 from server.social_accounts.views import social_accounts_blueprint
 from server.social_auths.models import SocialAuth
@@ -23,14 +22,15 @@ from server.users.models import User
 def create_app():
     """Create application factory, as explained here: http://flask.pocoo.org/docs/patterns/appfactories/."""
     app = Flask(__name__.split(".")[0])
-    # app.config.from_object(config_object)
     register_secrets(app)
     register_extensions(app)
     register_blueprints(app)
     # TODO: Uncomment
-    # register_background()
     print(app.url_map)
     CORS(app)
+
+    with app.app_context():
+        register_background()
 
     @app.before_request
     def before_request():
@@ -60,10 +60,14 @@ def register_blueprints(app: "Flask"):
 def register_extensions(app: "Flask"):
     bcrypt.init_app(app)
     db.init_app(app)
+    scheduler.init_app(app)
+
 
 def register_background():
     # hour
-    scheduler.add_job(func=scan_account, trigger="interval", seconds=60 * 60)
+    # scheduler.add_job(func=scan_account, trigger="interval", seconds=60 * 2)
+    import server.tasks
+
     scheduler.start()
 
     # Shut down the scheduler when exiting the app

@@ -9,8 +9,8 @@ from server.monitored_users.extensions import access_monitored_user
 from server.monitored_users.models import MonitoredUser
 from server.posts.models import Post
 from server.scan.model import predict
-from server.schedulers import scan_account
 from server.social_accounts.models import SocialAccount
+from server.tasks import scan_account
 from server.utils import extract_date, validate_with_schema
 
 scan_blueprint = Blueprint(
