@@ -42,11 +42,14 @@ def watchlist():
 @extract_date
 def metrics(date):
     user = g.user
+    filters = [MonitoredUser.user_id == user.id]
+    if date is not None:
+        filters.append(Post.date >= date)
     postsScanned = (
         db.session.query(Post.category, func.count().label("c"))
         .join(Post.social_account)
         .join(SocialAccount.monitored_user)
-        .filter(MonitoredUser.user_id == user.id)
+        .filter(*filters)
         .group_by(Post.category)
     )
 
